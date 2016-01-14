@@ -23,6 +23,8 @@ ADDON_CHECK_INTERVAL_SEC=${TEST_ADDON_CHECK_INTERVAL_SEC:-600}
 
 SYSTEM_NAMESPACE=kube-system
 
+SCRIPT_DIR=`dirname $0`
+
 token_dir=${TOKEN_DIR:-/srv/kubernetes}
 
 function create-kubeconfig-secret() {
@@ -135,12 +137,14 @@ echo "== Kubernetes addon manager started at $(date -Is) with ADDON_CHECK_INTERV
 # about, in a flat yaml format.
 kube_env_yaml="/var/cache/kubernetes-install/kube_env.yaml"
 if [ ! -e "${kubelet_kubeconfig_file}" ]; then
+  pushd ${SCRIPT_DIR} > /dev/null
   eval $(python -c '''
 import pipes,sys,yaml
 
 for k,v in yaml.load(sys.stdin).iteritems():
   print "readonly {var}={value}".format(var = k, value = pipes.quote(str(v)))
 ''' < "${kube_env_yaml}")
+  popd > /dev/null
 fi
 
 # Create the namespace that will be used to host the cluster-level add-ons.

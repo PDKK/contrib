@@ -60,6 +60,7 @@ fi
 NUM_TRIES=1    # will be updated based on input parameters
 DELAY_AFTER_ERROR_SEC=${TEST_DELAY_AFTER_ERROR_SEC:=10}
 
+SCRIPT_DIR=`dirname $0`
 
 # remember that you can't log from functions that print some output (because
 # logs are also printed on stdout)
@@ -71,22 +72,22 @@ function log() {
   # add the timestamp if you find it useful
   case $1 in
     DB3 )
-#        echo "$1: $2"
+        echo "DB3 $1: $2"
         ;;
     DB2 )
-#        echo "$1: $2"
+        echo "DB2 $1: $2"
         ;;
     DBG )
-#        echo "$1: $2"
+        echo "DBG $1: $2"
         ;;
     INFO )
-        echo "$1: $2"
+        echo "INFO $1: $2"
         ;;
     WRN )
-        echo "$1: $2"
+        echo "WRN $1: $2"
         ;;
     ERR )
-        echo "$1: $2"
+        echo "ERR $1: $2"
         ;;
     * )
         echo "INVALID_LOG_LEVEL $1: $2"
@@ -98,6 +99,7 @@ function log() {
 function get-object-kind-from-file() {
     # prints to stdout, so log cannot be used
     #WARNING: only yaml is supported
+    pushd ${SCRIPT_DIR} > /dev/null
     cat $1 | python -c '''
 try:
         import pipes,sys,yaml
@@ -112,6 +114,7 @@ try:
 except Exception, ex:
         print "ERROR"
     '''
+    popd > /dev/null
 }
 
 # $1 yaml file path
@@ -120,6 +123,7 @@ function get-object-nsname-from-file() {
     # prints to stdout, so log cannot be used
     #WARNING: only yaml is supported
     #addons that do not specify a namespace are assumed to be in "default".
+    pushd ${SCRIPT_DIR} > /dev/null
     cat $1 | python -c '''
 try:
         import pipes,sys,yaml
@@ -137,6 +141,7 @@ try:
 except Exception, ex:
         print "ERROR"
     '''
+    popd > /dev/null
 }
 
 # $1 addon directory path
@@ -349,6 +354,7 @@ function match-objects() {
 
     log DB2 "addon_nsnames_on_server=${addon_nsnames_on_server}"
     log DB2 "addon_paths_in_files=${addon_paths_in_files}"
+    log DB2 "${addon_dir}:${obj_type}"
 
     local matched_files=""
 
